@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ platform | capitalize }} Graphs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f4f4f4;
+            transition: 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #ddd;
+        }
+        .graph-container img {
+            margin-top: 30px;
+            max-width: 90%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ platform | capitalize }} Graphs</h1>
+    <div class="button-container">
+        {% if platform == "Reddit" %}
+            <button onclick="loadGraph('/graph/reddit/comments')">Total Comments by Subreddit</button>
+            <button onclick="loadGraph('/graph/reddit/score')">Total Score by Subreddit</button>
+        {% elif platform == "myanimelist" %}
+            <button onclick="loadGraph('/graph/myanimelist/heatmap')">Heatmap of Anime Scores</button>
+            <button onclick="loadGraph('/graph/myanimelist/favorites')">Top 10 Most Favorited Anime</button>
+        {% elif platform == "4chan" %}
+            <button onclick="loadGraph('/graph/4chan/sentiment')">Sentiment Distribution</button>
+            <button onclick="loadGraph('/graph/4chan/comments')">Number of Comments</button>
+        {% elif platform == "Politics" %}
+        <button onclick="loadGraph('/static/icons/polgraph.png')">Top 20 Frequent Words</button>
+        {% endif %}
+    </div>
+    <div class="graph-container">
+        {% if platform == "Reddit" %}
+            <img id="graph-image" src="/graph/reddit/comments" alt="Graph">
+        {% elif platform == "myanimelist" %}
+            <img id="graph-image" src="/graph/myanimelist/heatmap" alt="Graph">
+        {% elif platform == "4chan" %}
+            <img id="graph-image" src="/graph/4chan/sentiment" alt="Graph">
+        {% elif platform == "politics" %}
+            <img id="graph-image" src="/graph/politics/date-range-display" alt="Graph">
+        {% endif %}
+    </div>
+    
+<!-- 
+    <div class="date-range-container">
+        <label for="start-date">Start Date:</label>
+        <input type="date" id="start-date">
+        <label for="end-date">End Date:</label>
+        <input type="date" id="end-date">
+        <button onclick="loadGraphByDate()">Generate Graph</button>
+    </div> -->
+    
+    <div class="graph-container">
+        <img id="graph-image" src="/graph/politics/date-range" alt="Graph">
+    </div>
+    
+    
+    <script>
+        function loadGraphByDate() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+    
+            if (startDate && endDate) {
+                const graphImage = document.getElementById('graph-image');
+                graphImage.src = `/graph/politics/date-range?start_date=${startDate}&end_date=${endDate}`;
+                graphImage.alt = "Loading...";
+            } else {
+                alert("Please select both start and end dates.");
+            }
+        }
+    </script>
+    
+    
+
+    <script>
+        function loadGraph(url) {
+            const graphImage = document.getElementById('graph-image');
+            graphImage.src = url;
+            graphImage.alt = "Loading...";
+        }
+        
+    </script>
+    
+</body>
+</html>

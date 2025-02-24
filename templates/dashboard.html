@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='icons/anime-backgrounds.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 20px;
+        }
+        .icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+        }
+        .icon img {
+            width: 80px;
+            height: 80px;
+            transition: transform 0.3s;
+        }
+        .icon img:hover {
+            transform: scale(1.2);
+        }
+        .icon span {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color: white;
+        }
+        a:hover {
+            color: #ccc;
+            text-decoration: underline;
+        }
+        .date-range-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .date-range-container input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: white;
+            color: black;
+        }
+        .date-range-container button {
+            padding: 5px 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .date-range-container button:hover {
+            background-color: #777;
+        }
+        .dropdown-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        #anime-dropdown {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .modal-content {
+            position: relative;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Section: Date Range Selector -->
+        <div class="date-range-container">
+            <form id="date-range-form" onsubmit="generateGraph(event)">
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" name="start_date" value="2024-11-17">
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date" name="end_date" value="2024-11-28">
+                <button type="submit">Generate Graph</button>
+            </form>
+            <div id="graph-container">
+                <img id="date-graph" src="" alt="Graph" style="display: none; margin-top: 20px; max-width: 100%;">
+            </div>
+        </div>
+
+        <!-- Right Section: Main Icons -->
+        <div class="icon-container">
+            <div class="icon">
+                <a href="/graph/reddit">
+                    <img src="{{ url_for('static', filename='icons/redditicon.png') }}" alt="Reddit">
+                    <span>Reddit</span>
+                </a>
+            </div>
+            <div class="icon">
+                <a href="/graph/4chan">
+                    <img src="{{ url_for('static', filename='icons/4chan.png') }}" alt="4chan">
+                    <span>4chan</span>
+                </a>
+            </div>
+            <div class="icon">
+                <a href="/graph/myanimelist">
+                    <img src="{{ url_for('static', filename='icons/myanime.jpg') }}" alt="MyAnimeList">
+                    <span>MyAnimeList</span>
+                </a>
+            </div>
+            <div class="icon">
+                <a href="/graph/politics">
+                    <img src="{{ url_for('static', filename='icons/politics.png') }}" alt="Politics">
+                    <span>Politics</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dropdown for MyAnimeList -->
+    <div class="dropdown-container">
+        <label for="anime-dropdown">Select an Anime:</label>
+        <select id="anime-dropdown" onchange="loadAnimeGraph(this.value)">
+            <option value="" selected disabled>Select an anime</option>
+            <option value="cowboy_bebop">Cowboy Bebop</option>
+            <option value="naruto">Naruto</option>
+            <option value="one_piece">One Piece</option>
+            <option value="death_note">Death Note</option>
+            <option value="hunter_x_hunter">Hunter x Hunter</option>
+        </select>
+    </div>
+    
+    <div id="graphModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img id="anime-graph-modal" src="" alt="Graph" style="max-width: 100%; margin: 0 auto; display: block;">
+        </div>
+    </div>
+    <script>
+        function generateGraph(event) {
+            event.preventDefault(); // Prevent the form from refreshing the page
+        
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+        
+            if (startDate && endDate) {
+                const graphContainer = document.getElementById('graph-container');
+                const graphImg = document.getElementById('date-graph');
+                graphImg.src = `/graph/politics/date-range?start_date=${startDate}&end_date=${endDate}`;
+                graphImg.style.display = 'block';
+                graphImg.alt = "Loading...";
+            } else {
+                alert("Please select both start and end dates.");
+            }
+        }
+        </script>
+        
+    <script>
+        function loadAnimeGraph(animeName) {
+            if (animeName) {
+                const graphModal = document.getElementById('graphModal');
+                const graphImage = document.getElementById('anime-graph-modal');
+                graphImage.src = `/graph/myanimelist/anime/${animeName}`;
+                graphModal.style.display = 'block';
+            }
+        }
+    
+        function closeModal() {
+            document.getElementById('graphModal').style.display = 'none';
+        }
+    </script>
+    
+</body>
+</html>
