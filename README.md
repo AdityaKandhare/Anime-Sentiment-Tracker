@@ -113,6 +113,6 @@ Database Errors: Verify MySQL credentials in the scripts.
 Graph Issues: Check the tmp/ directory for generated images. Ensure Matplotlib and Seaborn are installed.
 
 Contact
-Anway Atkekar: aatkekar@binghamton.edu
+
 Aditya Kandhare: akandhare@binghamton.edu
-Sharwari Ambegaonkar: sambegaonkar@binghamton.edu
+
